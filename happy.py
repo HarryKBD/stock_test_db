@@ -425,7 +425,7 @@ if __name__ == "__main__":
     conn = sqlite3.connect("stock_all.db")
     c = conn.cursor()
 
-    happy_start = datetime(2021, 1, 11)
+    happy_start = datetime(2021, 1, 15)
     
     if len(sys.argv) >= 2:
         if(sys.argv[1] == "init_only"):
@@ -437,8 +437,8 @@ if __name__ == "__main__":
             sys.exit()
 
 
- #   d = datetime.now()
-    d = datetime(2021,1,15  )
+    d = datetime.now()
+    #d = datetime(2021,1,15)
     for k in range(1):    
         res = []
         for c in my_codes:
