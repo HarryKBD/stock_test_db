@@ -7,7 +7,7 @@ Created on Tue Dec 29 22:42:02 2020
 import numpy as np
 import pandas as pd
 import datetime
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandas import read_csv
@@ -317,7 +317,8 @@ if __name__ == "__main__":
     #sell_factors = [0.7, 0.75, 0.8, 0.85, 0.9]
     #t_earnings = [False, True]
 
-    durations = [(datetime(2018,10,15), datetime.now()), (datetime(2020,2,15), datetime(2021,1,13))]
+    #durations = [(datetime(2020,10,15), datetime.now()), (datetime(2020,2,15), datetime(2021,1,13))]
+    durations = [(datetime(2020,1,1), datetime(2020,12,31))]
     buy_factors = [1.1]
     sell_factors = [0.9]
     t_earnings = [True]
@@ -347,7 +348,7 @@ if __name__ == "__main__":
                     for e in t_earnings:
                         for bs in buy_and_gos:
                             r = simulate_trading(code, date_list, price_list, duration, take_earning = e, 
-                                    buy_factor=b, sell_factor= s, buy_and_go = bs, draw_plot=False)
+                                    buy_factor=b, sell_factor= s, buy_and_go = bs, draw_plot=True)
                             print(r.to_excel_string())
                             log_fd.writelines(r.to_excel_string())
         cur_test = cur_test + 1
