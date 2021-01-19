@@ -70,7 +70,7 @@ class StockPrice:
         self.volume = volume
 
     def to_price_text(self):
-        return "{} {} {:.1f}".format(self.code, self.date.strftime(FORMAT_DATE), self.closep)
+        return "{} {} {:.1f} {:.1f}".format(self.code, self.date.strftime(FORMAT_DATE), self.closep, self.change)
     def to_full_text(self):
         return "{} {} {:.1f} {:.1f} {:.1f} {:.1f} {} {:.1f}".format(
                 self.code, self.date.strftime(FORMAT_DATE), 
@@ -377,10 +377,14 @@ def check_today_data(conn, code, today = None):
             #buy stock
             log.w("Time to buy.....")
             #log_stock_trading(conn, code, 'BUY', list_price[-1], 8888888, t)
-            return 'BUYCHECK_BUY'
+            return "BUYCHECK_BUY     today: {:.1f}    target: {:.1f} ({:.1f})".format(
+                    list_price[-1], list_price[idx]*buy_factor, (list_price[idx]*buy_factor - list_price[-1]))
+
         else:
             log.w("It's not time to buy yet.")
-            return 'BUYCHECK_NOBUY'
+            return "BUYCHECK_NOBUY   today: {:.1f}    target: {:.1f} ({:.1f})".format(
+                    list_price[-1], list_price[idx]*buy_factor, (list_price[idx]*buy_factor - list_price[-1]))
+
         
     else:
         #get the highest price & date 
@@ -391,10 +395,15 @@ def check_today_data(conn, code, today = None):
             #buy stock
             log.w("Time to sell.....")
             #log_stock_trading(conn, code, 'SELL', list_price[-1], 8888888, t)
-            return 'SELLCHECK_SELL'
+            return "SELLCHECK_SELL    today: {:.1f}    target: {:.1f} ({:.1f})".format(
+                    list_price[-1], list_price[idx]*sell_factor, list_price[-1] - list_price[idx]*sell_factor)
+
         else:
             log.w("It's not time to sell yet.")
-            return 'SELLCHECK_NOSELL'
+            return "SELLCHECK_NOSELL  today: {:.1f}    target: {:.1f} ({:.1f})".format(
+                    list_price[-1], list_price[idx]*sell_factor, list_price[-1] - list_price[idx]*sell_factor)
+
+
     log.w("Done")
 
 #from_date = datetime(2001, 1, 1)
