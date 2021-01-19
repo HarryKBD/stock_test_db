@@ -7,18 +7,19 @@ from datetime import date
 import numpy as np
 
 FORMAT_DATE = '%Y-%m-%d'
+MY_HOME='/home/pi/stock_test_db/'
 
 cal = SouthKorea()
 
 class Logger:
     def __init__(self, fname):
         now = datetime.now()
-        self.log_file = fname + '_log_' + now.strftime("%m%d_%H%M") + '.txt'
+        self.log_file = MY_HOME + fname + '_log_' + now.strftime("%m%d") + '.txt'
         self.log_level = 5
         self.fd_opened = False
         
     def enable(self):
-        self.fd = open(self.log_file, "wt")
+        self.fd = open(self.log_file, "a")
         self.fd_opened = True
         
     def w(self, msg, cprint = False, level=1):
@@ -36,28 +37,12 @@ class Logger:
             self.fd.close()
 
 
-IS_TEST = True
-test_today = datetime(2020,1,6)
-#print(cal.is_working_day(date(2021,1,16)))
-
 #global log
 log = Logger("flow")
 log.enable()    
 
-def set_today(str_day):
-    tokens = str_day.split("-")
-    if len(tokens) == 3:
-        test_today = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
-        print("Set today ==> " + test_today.strftime(FORMAT_DATE))
-        return True
-    else:
-        return False
-        
 def get_today():
-    if IS_TEST:
-        return datetime(test_today.year, test_today.month, test_today.day)
-    else:
-        return datetime.now()
+    return datetime.now()
 
 def is_working_day(t):
     return cal.is_working_day(date(t.year, t.month, t.day))
@@ -67,7 +52,7 @@ def is_working_day(t):
 
 my_codes = ['068270', '005930']
 code = ['140410', '302550', '251370', '064760', '036810', '005070', '278280', '298050', '009830', '306200', '327260',
-        '218410', '099320', '001820', '009150', '066570', '012330', '102120', '036420']
+        '218410', '099320', '001820', '009150', '066570', '012330', '102120', '036420', '005930']
 
 my_codes = code
 
@@ -354,7 +339,7 @@ def check_today_data(conn, code, today = None):
         log.w("There is no data for today..very strange....")
         return 'NO_DATA_FROM_SERVER'
 
-    log.w("Got today's data! " + l[0].to_price_text())
+    log.w("Got today's data! " + l[0].to_price_text(), True)
     insert_stock_data(conn, l)
    
     #get list of prices from last transaction date
@@ -391,7 +376,7 @@ def check_today_data(conn, code, today = None):
         if list_price[idx]*buy_factor <= list_price[-1]:
             #buy stock
             log.w("Time to buy.....")
-            log_stock_trading(conn, code, 'BUY', list_price[-1], 8888888, t)
+            #log_stock_trading(conn, code, 'BUY', list_price[-1], 8888888, t)
             return 'BUYCHECK_BUY'
         else:
             log.w("It's not time to buy yet.")
@@ -405,7 +390,7 @@ def check_today_data(conn, code, today = None):
         if list_price[idx]*sell_factor >=  list_price[-1]:
             #buy stock
             log.w("Time to sell.....")
-            log_stock_trading(conn, code, 'SELL', list_price[-1], 8888888, t)
+            #log_stock_trading(conn, code, 'SELL', list_price[-1], 8888888, t)
             return 'SELLCHECK_SELL'
         else:
             log.w("It's not time to sell yet.")
@@ -422,20 +407,25 @@ import sys
 
 if __name__ == "__main__":
 
-    conn = sqlite3.connect("stock_all.db")
+    conn = sqlite3.connect(MY_HOME + "stock_all.db")
     c = conn.cursor()
 
-    happy_start = datetime(2021, 1, 15)
+    happy_start = datetime(2021, 1, 14)
     
     if len(sys.argv) >= 2:
-        if(sys.argv[1] == "init_only"):
+        if sys.argv[1] == "init":
             print("Init trading history table only. ")
             clearn_history_table(conn)
             for c in my_codes:
                 log_stock_trading(conn, c, 'SELL', 999999999, 8888888, happy_start)
             conn.close()
             sys.exit()
-
+        elif sys.argv[1] == "mark":
+            print("Put your op data here")
+            #clearn_history_table(conn)
+            log_stock_trading(conn, '005930', 'SELL', 999999999, 8888888, happy_start)
+            conn.close()
+            sys.exit()
 
     d = datetime.now()
     #d = datetime(2021,1,15)
