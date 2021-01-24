@@ -1,13 +1,13 @@
-import sqlite3
 import FinanceDataReader as fdr
 from datetime import datetime
 from datetime import timedelta
 from workalendar.asia import SouthKorea
 from datetime import date
 import numpy as np
+import hdb
 
 FORMAT_DATE = '%Y-%m-%d'
-MY_HOME='/home/pi/stock_test_db/'
+MY_HOME='./'
 
 cal = SouthKorea()
 
@@ -50,7 +50,6 @@ def is_working_day(t):
 #-------------------------
 #https://financedata.github.io/posts/finance-data-reader-users-guide.html
 
-my_codes = ['068270', '005930']
 code = ['140410', '302550', '251370', '064760', '036810', '005070', '278280', '298050', '009830', '306200', '327260',
         '218410', '099320', '001820', '009150', '066570', '012330', '102120', '036420', '005930']
 
@@ -103,7 +102,7 @@ def get_stock_data_from_server(code, s_datetime, e_datetime):
     col_closed = 'Close'
     sdate_str = s_datetime.strftime(FORMAT_DATE)
     edate_str = e_datetime.strftime(FORMAT_DATE)
-    #print("Connecting server to get data code: {}  from: {}  to: {} ".format(code, sdate_str, edate_str))
+    print("Connecting server to get data code: {}  from: {}  to: {} ".format(code, sdate_str, edate_str))
     while True:
         df = fdr.DataReader(code, sdate_str, edate_str)
         if len(df) == 0:
@@ -121,7 +120,6 @@ def get_stock_data_from_server(code, s_datetime, e_datetime):
         i = 0
         for c in closep:
             last_date =  idx[i].to_pydatetime()
-            dd = last_date.strftime(FORMAT_DATE)
             s = StockPrice(code, last_date, float(openp[i]), float(highp[i]), 
                     float(lowp[i]),  float(c), int(vol[i]), float(change[i]))
             price_days.append(s)
@@ -130,196 +128,19 @@ def get_stock_data_from_server(code, s_datetime, e_datetime):
         
         if same_date(e_datetime, last_date):
             break;
-        sdate_str = "{}-{}-{}".format(last_date.year, last_date.month+1, last_date.day)
+        last_date += timedelta(days=1)
+        sdate_str = "{}-{}-{}".format(last_date.year, last_date.month, last_date.day)
+        #sdate_str = "{}-{}-{}".format(last_date.year, last_date.month+1, last_date.day)
 
     return price_days
-
-
-
-def get_stock_data_from_db(conn, code, s_datetime, e_datetime):
-    c = conn.cursor()
-    
-    #for row in c.execute('select * from stocks order by code, sdate'):
-    #for row in c.execute('select * from trade_history order by op_time'):
-    query = "select sdate, close from stocks where code = '{}' and sdate >= '{}' and sdate <= '{}' order by sdate".format(
-            code, s_datetime.strftime(FORMAT_DATE), e_datetime.strftime(FORMAT_DATE))
-    #print(query)
-    cnt = 0
-    full_date = []
-    y = []
-    for row in c.execute(query):
-        full_date.append(row[0])
-        y.append(float(row[1]))
-        cnt += 1
-
-    if cnt == 0:
-        return False, full_date, y
-    else:
-        return True, full_date, y
-   
-
-
-def insert_stock_data(conn, s_list):
-    try:
-        c = conn.cursor()
-        for s in s_list:
-            query = (
-                    "insert or replace into stocks(code, sdate, open, high, low, close, volume, change) "
-                    + "values('{}', '{}', {:.1f}, {:.1f}, {:.1f}, {:.1f}, {}, 0.0)"
-                    ).format(s.get_code(), s.get_date(), s.get_open(), s.get_high(),
-                            s.get_low(), s.get_close(), s.get_volume())
-            #print(query)
-            c.execute(query)
-        conn.commit()
-    except sqlite3.DatabaseError as e:
-        print(e)
-#c.execute("insert into stocks(code, sdate, closep) values(068270, '2021-01-12', 123.456)")
-#c.execute("insert into stocks(code, sdate, closep) values(068270, '2021-01-13', 123.456)")
-#c.execute("insert into stocks(code, sdate, closep) values(068270, '1999-01-13', 123.456)")
-#conn.commit()
-
-
-def prepare_initial_table(conn, date_from):
-    now = datetime.now()
-    edate_str = now.strftime(FORMAT_DATE)
-
-    sdate_str = date_from.strftime(FORMAT_DATE)
-    
-    now = datetime(2021, 1,16)
-
-    print("{} from  ==> {} to".format(sdate_str, edate_str))
-    cnt = 1
-    for code in my_codes:
-        result_list = get_stock_data_from_server(code, date_from, now)
-        insert_stock_data(conn, result_list)
-        print("Getting {} data:  {} / {} ==> cnt: {}".format(code, str(cnt), str(len(my_codes)), str(len(result_list))))
-        cnt += 1
-
-    #op 1: 'BUY'  2: 'SELL'
-
-def log_stock_trading(conn, code, op, price, vol, log_date = None):
-    if log_date:
-        now = log_date
-    else:
-        now = datetime.now()
-    op_time = now.strftime("%Y-%m-%d %H:%M:%S.%f")
-    log.w("ACTION: {} code: {}  optime: {} price: {:.1f}".format(op, code, op_time, price), True)
-    query = (
-            "insert or ignore into trade_history(code, op_time, operation, volume, price) " + 
-            "values('{}','{}','{}',{},{:.2f})"
-            ).format(code, op_time, op, str(vol), price);
-    try:
-        c = conn.cursor()
-        #print(query)
-        c.execute(query)
-        conn.commit()
-    except Error as e:
-        print(e)
-        return False
-    return True
 
 def log_sell_stock(conn, code, price, vol, log_date = None):
     return log_stock_trading(conn, code, 'SELL', price, vol, log_date)
 
 def log_buy_stock(conn, code, price, vol, log_date = None):
     return log_stock_trading(conn, code, 'BUY', price, vol, log_date)
- 
-
-def create_trade_history_table(conn):
-    query = """CREATE TABLE IF NOT EXISTS trade_history(
-                code TEXT NOT NULL,
-                op_time DATETIME NOT NULL,
-                operation TEXT NOT NULL,
-                volume INT NOT NULL,
-                price FLOAT NOT NULL
-                );"""
-    try:
-        c = conn.cursor()
-        c.execute(query)
-    except Error as e:
-        print(e)
-        return False
-    return True
-
-def create_table(conn):
-    query = """CREATE TABLE IF NOT EXISTS stocks(
-                code text NOT NULL,
-                sdate date NOT NULL,
-                open FLOAT NOT NULL,
-                high FLOAT NOT NULL,
-                low FLOAT NOT NULL,
-                close FLOAT NOT NULL,
-                volume INT NOT NULL,
-                change FLOAT NOT NULL,
-                PRIMARY KEY (code, sdate)
-                );"""
-    try:
-        c = conn.cursor()
-        c.execute(query)
-    except Error as e:
-        print(e)
-        return False
-    return True
 
 #print(fdr.__version__)
-
-def get_closed_price(code, dd):
-    colname = 'Close'
-    df = fdr.DataReader(code, dd, dd)
-    print(df.head())
-    print("-"*100)
-    print(len(df))
-    print("-"*100)
-    print(float(df[colname][0]))
-    print("-"*100)
-    print(type(df[colname]))
-    print("-"*100)
-    if len(df) == 1:
-        return float(df[colname])
-    else:
-        return -1.0
-
-def get_current_price(code):
-    now = get_today()
-    d = now.strftime(FORMAT_DATE)
-    print("Today: " + d)
-    return get_closed_price(code, d)
-
-def get_latest_transaction(conn, code):
-    query = "select code, max(op_time), operation from trade_history where code = '{}'".format(code)
-    
-    #print(query)
-    c = conn.cursor()
-    #result = 
-    #print("History returns {}" + str(result.rowcount))
-
-    for row in c.execute(query):
-        return row[1], row[2]
-    now = datetime.now()
-    return now.strftime(FORMAT_DATE), 'SELL'
-    
-    
-def clearn_history_table(conn):
-    query = "delete from trade_history"
-    c = conn.cursor()
-    c.execute(query)
-    
-def create_trade_history_table(conn):
-    query = """CREATE TABLE IF NOT EXISTS trade_history(
-                code TEXT NOT NULL,
-                op_time DATETIME NOT NULL,
-                operation TEXT NOT NULL,
-                volume INT NOT NULL,
-                price FLOAT NOT NULL
-                );"""
-    try:
-        c = conn.cursor()
-        c.execute(query)
-    except Error as e:
-        print(e)
-        return False
-    return True
-
 
 
 def check_today_data(conn, code, today = None):
@@ -340,10 +161,10 @@ def check_today_data(conn, code, today = None):
         return 'NO_DATA_FROM_SERVER'
 
     log.w("Got today's data! " + l[0].to_price_text(), True)
-    insert_stock_data(conn, l)
+    hdb.insert_stock_data(conn, l)
    
     #get list of prices from last transaction date
-    log_date, op = get_latest_transaction(conn, code)
+    log_date, op = hdb.get_latest_transaction(conn, code)
     to_buy = False
     log.w("Starting date by the latest transaction: {} --> {}".format(log_date, op))
     if log_date == None:
@@ -362,7 +183,7 @@ def check_today_data(conn, code, today = None):
     buy_factor = 1.1
     sell_factor = 0.9
     
-    valid, list_date, list_price = get_stock_data_from_db(conn, code, sdate, t)
+    valid, list_date, list_price = hdb.get_stock_data_from_db(conn, code, sdate, t)
 
     if not valid:
         log.w("Data is not valid... ")
@@ -416,32 +237,30 @@ import sys
 
 if __name__ == "__main__":
 
-    conn = sqlite3.connect(MY_HOME + "stock_all.db")
-    c = conn.cursor()
-
+    conn = hdb.connect_db(MY_HOME + "stock_all.db")
     happy_start = datetime(2021, 1, 14)
     
     if len(sys.argv) >= 2:
         if sys.argv[1] == "init":
             print("Init trading history table only. ")
-            clearn_history_table(conn)
+            hdb.clean_history_table(conn)
             for c in my_codes:
-                log_stock_trading(conn, c, 'SELL', 999999999, 8888888, happy_start)
+                hdb.log_stock_trading(conn, c, 'SELL', 999999999, 8888888, happy_start)
             conn.close()
             sys.exit()
         elif sys.argv[1] == "mark":
             print("Put your op data here")
             dd = datetime(2021,1,22)
             #clearn_history_table(conn)
-            log_stock_trading(conn, '251370', 'BUY', 21900.0, 913, dd)
-            #log_stock_trading(conn, '066570', 'BUY', 166500.0, 8888888, dd)
-            #log_stock_trading(conn, '306200', 'BUY', 108500.0, 8888888, dd)
-            #log_stock_trading(conn, '012330', 'BUY', 363000.0, 8888888, dd)
+            hdb.log_stock_trading(conn, '251370', 'BUY', 21900.0, 913, dd)
+            #hdb.log_stock_trading(conn, '066570', 'BUY', 166500.0, 8888888, dd)
+            #hdb.log_stock_trading(conn, '306200', 'BUY', 108500.0, 8888888, dd)
+            #hdb.log_stock_trading(conn, '012330', 'BUY', 363000.0, 8888888, dd)
             conn.close()
             sys.exit()
 
     d = datetime.now()
-    #d = datetime(2021,1,15)
+    #d = datetime(2021,1,22)
     for k in range(1):    
         res = []
         for c in my_codes:
