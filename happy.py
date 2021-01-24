@@ -70,7 +70,7 @@ class StockPrice:
         self.volume = volume
 
     def to_price_text(self):
-        return "{} {} {:.1f} {:.1f}".format(self.code, self.date.strftime(FORMAT_DATE), self.closep, self.change)
+        return "{} {} {:.1f} {:.1f}".format(self.code, self.date.strftime(FORMAT_DATE), self.closep, self.change*100)
     def to_full_text(self):
         return "{} {} {:.1f} {:.1f} {:.1f} {:.1f} {} {:.1f}".format(
                 self.code, self.date.strftime(FORMAT_DATE), 
@@ -431,8 +431,12 @@ if __name__ == "__main__":
             sys.exit()
         elif sys.argv[1] == "mark":
             print("Put your op data here")
+            dd = datetime(2021,1,22)
             #clearn_history_table(conn)
-            log_stock_trading(conn, '005930', 'SELL', 999999999, 8888888, happy_start)
+            log_stock_trading(conn, '251370', 'BUY', 21900.0, 913, dd)
+            #log_stock_trading(conn, '066570', 'BUY', 166500.0, 8888888, dd)
+            #log_stock_trading(conn, '306200', 'BUY', 108500.0, 8888888, dd)
+            #log_stock_trading(conn, '012330', 'BUY', 363000.0, 8888888, dd)
             conn.close()
             sys.exit()
 
