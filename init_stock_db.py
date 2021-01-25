@@ -1,5 +1,3 @@
-
-
 import FinanceDataReader as fdr
 import hdb
 import sys
@@ -8,6 +6,7 @@ from datetime import datetime
 from datetime import date
 import happy
 import korea_stocks_info
+import code_list
 
 
 FORMAT_DATE = '%Y-%m-%d'
@@ -44,8 +43,9 @@ def prepare_initial_table(conn, code_list, date_from, date_to):
 if __name__ == "__main__":
     # append action allows to group repeating
     # options
-    my_codes = korea_stocks_info.korea_stock_all
-    #happy.code    
+    #my_codes = korea_stocks_info.korea_stock_all
+    #my_codes = code_list.my_code_list
+    my_codes = code_list.my_code_list_t.keys()
     
     parser = argparse.ArgumentParser()
        
@@ -64,17 +64,24 @@ if __name__ == "__main__":
     datet = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
 
 
-    conn = hdb.connect_db("stock_all_by_210222.db")
+    #conn = hdb.connect_db("stock_all_by_210222.db")
+    conn = hdb.connect_db("stock_all.db")
     
     update_codes = args.codes
 
-    if update_codes[0] == 'all':
-        #process codes
-        update_codes = my_codes
+
+
+    if update_codes[0] == 'codelist':
+        # 한국거래소 상장종목 전체
+        df_krx = fdr.StockListing('KRX')
+        print(df_krx.head())
+    else:
+        if update_codes[0] == 'all':
+            #process codes
+            update_codes = my_codes
       
-    print(f'updating db {datef}  {datet} with codes{update_codes}')       
-    prepare_initial_table(conn, update_codes, datef, datet)
-    
+        print(f'updating db {datef}  {datet} with codes{update_codes}')       
+        prepare_initial_table(conn, update_codes, datef, datet)
     
     conn.close()
  

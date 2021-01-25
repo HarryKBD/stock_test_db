@@ -5,9 +5,10 @@ from workalendar.asia import SouthKorea
 from datetime import date
 import numpy as np
 import hdb
+import code_list
 
 FORMAT_DATE = '%Y-%m-%d'
-MY_HOME='./'
+MY_HOME='/home/pi/stock_test_db/'
 
 cal = SouthKorea()
 
@@ -50,12 +51,8 @@ def is_working_day(t):
 #-------------------------
 #https://financedata.github.io/posts/finance-data-reader-users-guide.html
 
-code = ['140410', '302550', '251370', '064760', '036810', '005070', '278280', '298050', '009830', '306200', '327260',
-        '218410', '099320', '001820', '009150', '066570', '012330', '102120', '036420', '005930']
-
-my_codes = code
-
-
+my_codes_t =  code_list.my_code_list_t
+my_codes = my_codes_t.keys()
 
 class StockPrice:
     def __init__(self, code, date, openp = 0.0, highp = 0.0, lowp = 0.0, closep=0.0, volume = 0, change=0.0):
@@ -69,7 +66,8 @@ class StockPrice:
         self.volume = volume
 
     def to_price_text(self):
-        return "{} {} {:.1f} {:.1f}".format(self.code, self.date.strftime(FORMAT_DATE), self.closep, self.change*100)
+        return "{0: <6}:{1: <15} {2} {3: <10.0f} {4: <5.2f}".format(
+                self.code, my_codes_t[self.code], self.date.strftime(FORMAT_DATE), self.closep, self.change*100)
     def to_full_text(self):
         return "{} {} {:.1f} {:.1f} {:.1f} {:.1f} {} {:.1f}".format(
                 self.code, self.date.strftime(FORMAT_DATE), 
@@ -102,7 +100,7 @@ def get_stock_data_from_server(code, s_datetime, e_datetime):
     col_closed = 'Close'
     sdate_str = s_datetime.strftime(FORMAT_DATE)
     edate_str = e_datetime.strftime(FORMAT_DATE)
-    print("Connecting server to get data code: {}  from: {}  to: {} ".format(code, sdate_str, edate_str))
+    #print("Connecting server to get data code: {}  from: {}  to: {} ".format(code, sdate_str, edate_str))
     while True:
         df = fdr.DataReader(code, sdate_str, edate_str)
         if len(df) == 0:
@@ -173,11 +171,12 @@ def check_today_data(conn, code, today = None):
     else:
         tokens = log_date.split(' ')[0].split('-')
         sdate = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
+        sdate += timedelta(days=1)
         if op == "SELL":
-            log.w("Check if today is the time to buy")
+            log.w("Check if today is the time to BUY from date {}".format(sdate.strftime(FORMAT_DATE)))
             to_buy = True   #We don't have stock. Check if today is the time to buy
         else:
-            log.w("Check if today is the time to SELL")
+            log.w("Check if today is the time to SELL from date {}".format(sdate.strftime(FORMAT_DATE)))
             to_buy = False #We hae stocks. Check if today is the time to sell
 
     buy_factor = 1.1
@@ -189,6 +188,9 @@ def check_today_data(conn, code, today = None):
         log.w("Data is not valid... ")
         return 'NO_STOCK_DATA_IN_DB'
 
+    #I Love papa
+    #I love Nayun.
+
     if to_buy:
         #get the lowest price & date
         idx = np.argmin(list_price)
@@ -198,13 +200,13 @@ def check_today_data(conn, code, today = None):
             #buy stock
             log.w("Time to buy.....")
             #log_stock_trading(conn, code, 'BUY', list_price[-1], 8888888, t)
-            return "BUYCHECK_BUY     today: {:.1f}    target: {:.1f} ({:.1f})".format(
-                    list_price[-1], list_price[idx]*buy_factor, (list_price[idx]*buy_factor - list_price[-1]))
+            return "-BUYCHECK_BUY-    today: {0: <6.0f} t: {1: <6.0f} ({2} {3:.0f})".format(
+                    list_price[-1], list_price[idx]*buy_factor, list_date[idx][5:], (list_price[idx]*buy_factor - list_price[-1]))
 
         else:
             log.w("It's not time to buy yet.")
-            return "BUYCHECK_NOBUY   today: {:.1f}    target: {:.1f} ({:.1f})".format(
-                    list_price[-1], list_price[idx]*buy_factor, (list_price[idx]*buy_factor - list_price[-1]))
+            return "BUYCHECK_NOBUY    today: {0: <6.0f} t: {1: <6.0f} ({2} {3:.0f})".format(
+                    list_price[-1], list_price[idx]*buy_factor, list_date[idx][5:], (list_price[idx]*buy_factor - list_price[-1]))
 
         
     else:
@@ -216,13 +218,13 @@ def check_today_data(conn, code, today = None):
             #buy stock
             log.w("Time to sell.....")
             #log_stock_trading(conn, code, 'SELL', list_price[-1], 8888888, t)
-            return "SELLCHECK_SELL    today: {:.1f}    target: {:.1f} ({:.1f})".format(
-                    list_price[-1], list_price[idx]*sell_factor, list_price[-1] - list_price[idx]*sell_factor)
+            return "-SELLCHECK_SELL-  today: {0: <6.0f} t: {1: <6.0f} ({2} {3:.0f})".format(
+                    list_price[-1], list_price[idx]*sell_factor, list_date[idx][5:], (list_price[-1] - list_price[idx]*sell_factor))
 
         else:
             log.w("It's not time to sell yet.")
-            return "SELLCHECK_NOSELL  today: {:.1f}    target: {:.1f} ({:.1f})".format(
-                    list_price[-1], list_price[idx]*sell_factor, list_price[-1] - list_price[idx]*sell_factor)
+            return "SELLCHECK_NOSELL  today: {0: <6.0f} t: {1: <6.0f} ({2} {3:.0f})".format(
+                    list_price[-1], list_price[idx]*sell_factor, list_date[idx][5:], (list_price[-1] - list_price[idx]*sell_factor))
 
 
     log.w("Done")
@@ -250,9 +252,15 @@ if __name__ == "__main__":
             sys.exit()
         elif sys.argv[1] == "mark":
             print("Put your op data here")
-            dd = datetime(2021,1,22)
+            dd = datetime(2021,1,25)
             #clearn_history_table(conn)
-            hdb.log_stock_trading(conn, '251370', 'BUY', 21900.0, 913, dd)
+            hdb.log_stock_trading(conn, '048260', 'SELL', 55700.0, 133, datetime(2021,1,20))
+            hdb.log_stock_trading(conn, '336370', 'SELL', 51800.0, 133, datetime(2021,1,20))
+            hdb.log_stock_trading(conn, '047810', 'SELL', 31600.0, 133, datetime(2021,1,20))
+            hdb.log_stock_trading(conn, '272210', 'SELL', 18300.0, 133, datetime(2021,1,14))
+            hdb.log_stock_trading(conn, '012450', 'SELL', 18300.0, 133, datetime(2021,1,18))
+            hdb.log_stock_trading(conn, '051500', 'SELL', 21750.0, 133, datetime(2021,1,14))
+
             #hdb.log_stock_trading(conn, '066570', 'BUY', 166500.0, 8888888, dd)
             #hdb.log_stock_trading(conn, '306200', 'BUY', 108500.0, 8888888, dd)
             #hdb.log_stock_trading(conn, '012330', 'BUY', 363000.0, 8888888, dd)
@@ -272,11 +280,10 @@ if __name__ == "__main__":
         
         i = 0
         for c in my_codes:
-            log.w("{}  =>  {}".format(c, res[i]), True)
+            log.w("{0: <6}:{1: <15} => {2: <30}".format(c, my_codes_t[c], res[i]), True)
             i += 1
         d += timedelta(days=1)
     
     log.disable()
     conn.close()
     
-
