@@ -171,7 +171,7 @@ def check_today_data(conn, code, today = None):
     else:
         tokens = log_date.split(' ')[0].split('-')
         sdate = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
-        sdate += timedelta(days=1)
+        #sdate += timedelta(days=1)
         if op == "SELL":
             log.w("Check if today is the time to BUY from date {}".format(sdate.strftime(FORMAT_DATE)))
             to_buy = True   #We don't have stock. Check if today is the time to buy
@@ -252,14 +252,21 @@ if __name__ == "__main__":
             sys.exit()
         elif sys.argv[1] == "mark":
             print("Put your op data here")
-            dd = datetime(2021,1,25)
             #clearn_history_table(conn)
-            hdb.log_stock_trading(conn, '048260', 'SELL', 55700.0, 133, datetime(2021,1,20))
-            hdb.log_stock_trading(conn, '336370', 'SELL', 51800.0, 133, datetime(2021,1,20))
-            hdb.log_stock_trading(conn, '047810', 'SELL', 31600.0, 133, datetime(2021,1,20))
-            hdb.log_stock_trading(conn, '272210', 'SELL', 18300.0, 133, datetime(2021,1,14))
-            hdb.log_stock_trading(conn, '012450', 'SELL', 18300.0, 133, datetime(2021,1,18))
-            hdb.log_stock_trading(conn, '051500', 'SELL', 21750.0, 133, datetime(2021,1,14))
+            #hdb.log_stock_trading(conn, '048260', 'SELL', 55700.0, 133, datetime(2021,1,20))
+            #hdb.log_stock_trading(conn, '336370', 'SELL', 51800.0, 133, datetime(2021,1,20))
+            #hdb.log_stock_trading(conn, '047810', 'SELL', 31600.0, 133, datetime(2021,1,20))
+            #hdb.log_stock_trading(conn, '272210', 'SELL', 18300.0, 133, datetime(2021,1,14))
+            #hdb.log_stock_trading(conn, '012450', 'SELL', 18300.0, 133, datetime(2021,1,18))
+            #hdb.log_stock_trading(conn, '051500', 'SELL', 21750.0, 133, datetime(2021,1,14))
+            hdb.log_stock_trading(conn, '099320', 'SELL', 58500, 133, datetime(2021,1,28))
+
+
+            #hdb.log_stock_trading(conn, '327260', 'BUY', 31750.0, 133, datetime(2021,1,25))
+            #hdb.log_stock_trading(conn, '009150', 'BUY', 219000.0, 133, datetime(2021,1,25))
+            #hdb.log_stock_trading(conn, '048260', 'BUY', 61000.0, 133, datetime(2021,1,25))
+            #hdb.log_stock_trading(conn, '051500', 'BUY', 22950.0, 133, datetime(2021,1,25))
+            #hdb.log_stock_trading(conn, '012450', 'BUY', 46000.0, 133, datetime(2021,1,25))
 
             #hdb.log_stock_trading(conn, '066570', 'BUY', 166500.0, 8888888, dd)
             #hdb.log_stock_trading(conn, '306200', 'BUY', 108500.0, 8888888, dd)
