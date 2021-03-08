@@ -201,37 +201,20 @@ import sys
 
 if __name__ == "__main__":
 
+    print_eng = True
+    if len(sys.argv) >= 2:
+        if sys.argv[1] == "kor":
+            print_eng = False
+
+
     conn = hdb.connect_db(MY_HOME + "stock_all.db")
-  
     code_list = hdb.get_stock_code_list_interested(conn)
     
  
-    print(code_list)
-    
     d = datetime.now()
     for code in code_list:
-        r = check_today_data(conn, code, d, eng_name=True)
- #       break
+        r = check_today_data(conn, code, d, eng_name=print_eng)
         
         
-        
-        
-#to print
-#category, code, name, base_price, today_price, base_price_%, my_avg_price, my_price_%, invested, latest_top_price_current_price
-        
-    
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
+    log.disable()
+    conn.close()
