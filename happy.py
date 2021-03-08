@@ -6,9 +6,11 @@ from datetime import date
 import numpy as np
 import hdb
 import code_list
+import korea_stocks_info
 
 FORMAT_DATE = '%Y-%m-%d'
-MY_HOME='/home/pi/stock_test_db/'
+#MY_HOME='/home/pi/stock_test_db/'
+MY_HOME='./'
 
 cal = SouthKorea()
 

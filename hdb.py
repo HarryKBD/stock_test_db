@@ -5,6 +5,7 @@ Created on Sun Jan 24 11:00:40 2021
 @author: keybd
 """
 import sqlite3
+import csv
 from datetime import datetime
 from datetime import date
 
@@ -15,13 +16,17 @@ def connect_db(db_name):
     return conn
 
 
-def get_stock_data_from_db(conn, code, s_datetime, e_datetime):
+def get_stock_data_from_db(conn, code, s_datetime=None, e_datetime=None):
     c = conn.cursor()
     
-    #for row in c.execute('select * from stocks order by code, sdate'):
-    #for row in c.execute('select * from trade_history order by op_time'):
-    query = "select sdate, close from stocks where code = '{}' and sdate >= '{}' and sdate <= '{}' order by sdate".format(
-            code, s_datetime.strftime(FORMAT_DATE), e_datetime.strftime(FORMAT_DATE))
+    
+    if s_datetime != None and e_datetime != None:
+        #for row in c.execute('select * from stocks order by code, sdate'):
+        #for row in c.execute('select * from trade_history order by op_time'):
+        query = "select sdate, close from stocks where code = '{}' and sdate >= '{}' and sdate <= '{}' order by sdate".format(
+                code, s_datetime.strftime(FORMAT_DATE), e_datetime.strftime(FORMAT_DATE))
+    else:
+        query = "select sdate, close from stocks where code = '{}' order by sdate".format(code)
     #print(query)
     cnt = 0
     full_date = []
@@ -137,6 +142,51 @@ def get_current_price(code):
     print("Today: " + d)
     return get_closed_price(code, d)
 
+
+def get_stock_names(conn, code):
+    query = "select name_kor, name_eng from stock_basic_info where code = '{}'".format(code)
+    c = conn.cursor()
+    for row in c.execute(query):
+        return row[0], row[1]
+    
+    return None, None
+
+
+def get_all_stocks_code(conn, market):
+    
+    code_list = []
+    if market != 'all':
+        return code_list
+    
+    query = "select code from stock_basic_info"
+    c = conn.cursor()
+    
+    for row in c.execute(query):
+        code_list.append(row[0])
+    
+    return code_list
+
+
+def get_stock_code_list_interested(conn):
+    code_list = []
+
+    query = "select code from target_list"
+    c = conn.cursor()
+    
+    for row in c.execute(query):
+        code_list.append(row[0])
+    
+    return code_list
+
+def get_stock_info_interested(conn, code):
+    query = "select category, added_date, base_price, origin from target_list where code = '{}'".format(code)
+    c = conn.cursor()
+    
+    for row in c.execute(query):
+        return row[0], row[1], row[2], row[3]
+    
+    return None, None, None, None, None
+    
 def get_latest_transaction(conn, code):
     query = "select code, max(op_time), operation from trade_history where code = '{}'".format(code)
     
@@ -150,12 +200,56 @@ def get_latest_transaction(conn, code):
     now = datetime.now()
     return now.strftime(FORMAT_DATE), 'SELL'
     
+
+def get_own_stock_info(conn, code):
+    query = "select cnt, avg_price from current_stock where code = '{}'".format(code)
+    c = conn.cursor()
+    
+    for row in c.execute(query):
+        return row[0], row[1]
+    
+    return 0, 0.0
     
 def clean_history_table(conn):
     query = "delete from trade_history"
     c = conn.cursor()
     c.execute(query)
-    
+
+def create_stock_basic_info_table(conn):
+    query = """CREATE TABLE IF NOT EXISTS stock_basic_info(
+                code TEXT NOT NULL,
+                name_kor TEXT NOT NULL, 
+                name_eng TEXT NOT NULL,
+                market_type TEXT NOT NULL
+                );"""
+    try:
+        c = conn.cursor()
+        c.execute(query)
+        conn.commit()
+    except Error as e:
+        print(e)
+        return False
+    return True
+
+
+def create_target_list_table(conn):
+    query = """CREATE TABLE IF NOT EXISTS target_list(
+                category TEXT NOT NULL,            
+                code TEXT PRIMARY KEY NOT NULL,
+                added_date DATE NOT NULL, 
+                base_price FLOAT NOT NULL,
+                origin TEXT NOT NULL
+                );"""
+    try:
+        c = conn.cursor()
+        c.execute(query)
+        conn.commit()
+    except Error as e:
+        print(e)
+        return False
+    return True
+
+
 def create_trade_history_table(conn):
     query = """CREATE TABLE IF NOT EXISTS trade_history(
                 code TEXT NOT NULL,
@@ -167,9 +261,81 @@ def create_trade_history_table(conn):
     try:
         c = conn.cursor()
         c.execute(query)
+        conn.commit()
+    except Error as e:
+        print(e)
+        return False
+    return True
+
+def create_current_stock_table(conn):
+    query = """CREATE TABLE IF NOT EXISTS current_stock(
+                code TEXT PRIMARY KEY NOT NULL,
+                cnt INT NOT NULL,
+                avg_price FLOAT NOT NULL
+                );"""
+    try:
+        c = conn.cursor()
+        c.execute(query)
+        conn.commit()
     except Error as e:
         print(e)
         return False
     return True
 
 
+def insert_current_stock(conn, code, avg_price, cnt):
+    try:
+        c = conn.cursor()
+        query = (
+                 "insert or replace into current_stock(code, cnt, avg_price) "
+               + "values('{}', {}, {:.1f})"
+               ).format(code, str(cnt), avg_price)
+        print(query)
+        c.execute(query)
+        conn.commit()
+    except sqlite3.DatabaseError as e:
+        print(e)
+
+
+def insert_target_list(conn, category, code, base_price, added, origin):
+    try:
+        c = conn.cursor()
+        query = (
+                 "insert or replace into target_list(category, code, added_date, base_price, origin) "
+               + "values('{}', '{}', '{}', {:.1f}, '{}')"
+               ).format(category, code, added, base_price, origin)
+        print(query)
+        c.execute(query)
+        conn.commit()
+    except sqlite3.DatabaseError as e:
+        print(e)
+    
+
+def insert_stock_basic_info(conn, rdr):
+    try:
+        c = conn.cursor()
+        for line in rdr:
+            code = line[1].replace("'", "")
+            name_kor = line[3].replace("'", "")
+            name_eng = line[4].replace("'", "")
+            market = line[6].replace("'", "")
+            
+            query = (
+                    "insert or replace into stock_basic_info(code, name_kor, name_eng, market_type) "
+                    + "values('{}', '{}', '{}', '{}' )"
+                    ).format(code, name_kor, name_eng, market)
+            #print(query)
+            c.execute(query)
+        conn.commit()
+    except sqlite3.DatabaseError as e:
+        print(e)
+
+def init_stock_basic_info_table(conn, csv_file):
+    create_stock_basic_info_table(conn)
+ 
+    f = open(csv_file,'r')
+    rdr = csv.reader(f)
+ 
+    insert_stock_basic_info(conn, rdr)
+     
+    f.close()   

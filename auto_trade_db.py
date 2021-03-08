@@ -320,7 +320,8 @@ if __name__ == "__main__":
     #t_earnings = [False, True]
 
     #durations = [(datetime(2020,10,15), datetime.now()), (datetime(2020,2,15), datetime(2021,1,13))]
-    durations = [(datetime(2020,1,1), datetime(2020,12,31))]
+    #durations = [(datetime(2020,1,1), datetime(2020,12,31))]
+    durations = [(datetime(2017,1,1), datetime(2020,1,31))]
     buy_factors = [1.1]
     sell_factors = [0.9]
     t_earnings = [True]
@@ -330,7 +331,8 @@ if __name__ == "__main__":
 
     code_list = ['140410', '302550', '251370', '064760', '036810', '005070', '278280', '298050', '009830', '306200', '327260',
             '218410', '099320', '001820', '009150', '066570', '012330', '102120', '036420']
-
+    
+    code_list = ['140410', '302550']
     now = datetime.now() 
     log_file = 'simulate_' + now.strftime("%m%d_%H%M") + '.txt'
     log_fd = open(log_file, "wt")
