@@ -141,6 +141,26 @@ def log_buy_stock(conn, code, price, vol, log_date = None):
 #print(fdr.__version__)
 
 
+def get_highest_price_half_year(conn, code):
+    today = datetime.now()
+    #one_year_before = today - timedelta(days=365) 
+    one_year_before = today - timedelta(days=182) 
+
+    return get_highest_price_between(conn, code, one_year_before, today)
+
+def get_highest_price_between(conn, code, from_datetime, to_datetime):
+    valid, list_date, list_price = hdb.get_stock_data_from_db(conn, code, from_datetime, to_datetime)
+
+    if valid != True:
+        return -1, None
+
+    max_price = max(list_price)
+    result = [i for i, j in enumerate(list_price) if j == max_price]
+
+    return list_date[result[-1]], list_price[result[-1]]
+
+
+
 def check_today_data(conn, code, today = None, eng_name=True):
     
     t = datetime.now()
@@ -182,18 +202,26 @@ def check_today_data(conn, code, today = None, eng_name=True):
     
     if cnt > 0:
         profit_rate = (today_price - avg_price)/avg_price*100.0
-    #{2: <30}
-    str1 = "{7: <1} {0: <17} {1: <6} {2: <13} ({3: <8.0f} {4: <5.1f}) => BASE [{5: <8.0f} {6: <5.1f}] ".format(
-         category, code, name, today_price, today_rate, base_price, base_rate, origin[0])
 
-    str2 = "{0: <28} {1: <7}".format(" "*28, added_date[:7], origin)
+
+    max_date, max_price = get_highest_price_half_year(conn, code)
+    diff_max = today_price - max_price
+    rate_max = diff_max/max_price * 100.0
+
+
+    str1 = "{7: <1} {0: <7} {1: <6} {2: <13} {3: <7.0f} {4: >4.1f} MAX:({9: <8}, {8: >4.0f} % {10: <7.0f})=> BASE [{5: <7.0f} {6: >4.0f} %] ".format(
+            category[:6], code, name, today_price, today_rate, base_price, base_rate, origin[0], rate_max, max_date[2:], max_price)
+
+    str2 = "{0: <28} {1: <5}".format(" "*28, added_date[2:7], origin)
     if cnt > 0:
-        str2 = "MY [ {0: <8.0f} {1: <5.1f} ({2: <4}) ] {3: <7} ".format(avg_price, profit_rate, str(cnt), added_date[:7], origin)
+        str2 = "MY [ {0: <8.0f} {1: <5.1f} ({2: <4}) ] {3: <5} ".format(avg_price, profit_rate, str(cnt), added_date[2:7], origin)
 
     log.w("Done")
     
     print(str1 + str2)
 
+    #print("{0} => max date: {1}  price {2: 5.1f}".format(code, max_date, max_price))
+    
 
 
 import sys
