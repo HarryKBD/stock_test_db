@@ -179,13 +179,13 @@ def get_stock_code_list_interested(conn):
     return code_list
 
 def get_stock_info_interested(conn, code):
-    query = "select category, added_date, base_price, origin from target_list where code = '{}'".format(code)
+    query = "select category, added_date, base_price, origin, wanted from target_list where code = '{}'".format(code)
     c = conn.cursor()
     
     for row in c.execute(query):
-        return row[0], row[1], row[2], row[3]
+        return row[0], row[1], row[2], row[3], row[4]
     
-    return None, None, None, None, None
+    return None, None, None, None, None, None
     
 def get_latest_transaction(conn, code):
     query = "select code, max(op_time), operation from trade_history where code = '{}'".format(code)
@@ -238,7 +238,8 @@ def create_target_list_table(conn):
                 code TEXT PRIMARY KEY NOT NULL,
                 added_date DATE NOT NULL, 
                 base_price FLOAT NOT NULL,
-                origin TEXT NOT NULL
+                origin TEXT NOT NULL,
+                wanted TEXT NOT NULL
                 );"""
     try:
         c = conn.cursor()
@@ -297,13 +298,13 @@ def insert_current_stock(conn, code, avg_price, cnt):
         print(e)
 
 
-def insert_target_list(conn, category, code, base_price, added, origin):
+def insert_target_list(conn, category, code, base_price, added, origin, wanted='2'):
     try:
         c = conn.cursor()
         query = (
-                 "insert or replace into target_list(category, code, added_date, base_price, origin) "
-               + "values('{}', '{}', '{}', {:.1f}, '{}')"
-               ).format(category, code, added, base_price, origin)
+                 "insert or replace into target_list(category, code, added_date, base_price, origin, wanted) "
+               + "values('{}', '{}', '{}', {:.1f}, '{}', '{}')"
+               ).format(category, code, added, base_price, origin, wanted)
         print(query)
         c.execute(query)
         conn.commit()

@@ -35,30 +35,30 @@ def prepare_initial_table(conn, code_list, date_from, date_to):
 
 def init_target_list(conn):
     hdb.create_target_list_table(conn)
-    hdb.insert_target_list(conn, 'Health', '048260', 36500, '2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'Health', '048260', 36500, '2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Space', '047810', 23700, '2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Airplaine', '067390', 5430, '2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'Airplaine', '067390', 5430, '2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Travel','080160', 16450, '2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Food system', '051500', 18850,'2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'Food system', '051500', 18850,'2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Battery','247540', 55000,'2020-12-01', 'Dang')
     hdb.insert_target_list(conn, 'Battery','020150', 42150,'2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Battery','243840', 39500,'2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'Battery','243840', 39500,'2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Battery','131390', 11000,'2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Battery','079810', 9500,'2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'Battery','079810', 9500,'2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Battery','137400', 6470,'2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Battery/OLED', '161580', 14200,'2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'Battery/OLED', '161580', 14200,'2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, '4th','086960', 15650, '2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Green','009450', 55300,'2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'Green','009450', 55300,'2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'IT material', '178920', 29300,'2020-12-01', 'Dang')
     hdb.insert_target_list(conn, 'Electric Medicine', '302550', 26000,'2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Health','054950', 35500, '2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'OLED', '347770', 16800,'2021-01-01', 'Dang')
+    hdb.insert_target_list(conn, 'Health','054950', 35500, '2020-12-01', 'Dang', wanted='1')
+    hdb.insert_target_list(conn, 'OLED', '347770', 16800,'2021-01-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Consumer', '036670', 9780, '2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, 'Ship', '010620', 49500, '2021-02-02', 'Dang')
+    hdb.insert_target_list(conn, 'Ship', '010620', 49500, '2021-02-02', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Ship', '010140', 6480,'2021-02-02', 'Dang')
     hdb.insert_target_list(conn, 'Ship', '042660', 26600,'2021-02-02', 'Dang')
-    hdb.insert_target_list(conn, 'LNG/H','033500', 11000,'2021-02-02', 'Dang')
-    hdb.insert_target_list(conn, 'LNG Parts', '013030', 14950, '2021-02-02', 'Dang')
+    hdb.insert_target_list(conn, 'LNG/H','033500', 11000,'2021-02-02', 'Dang', wanted='1')
+    hdb.insert_target_list(conn, 'LNG Parts', '013030', 14950, '2021-02-02', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'Shipping','028670', 4110, '2020-12-01', 'Dang')
     hdb.insert_target_list(conn, 'Shipping','044450', 10300, '2020-12-01', 'Dang')
     hdb.insert_target_list(conn, 'Food system','051160', 11700, '2020-12-01', 'Dang')
@@ -66,7 +66,7 @@ def init_target_list(conn):
     hdb.insert_target_list(conn, 'Semiconductor','083450', 20100, '2020-12-01', 'Dang')
     hdb.insert_target_list(conn, '5G','050890', 11050, '2020-12-01', 'Dang')
     hdb.insert_target_list(conn, '5G','039560', 12500, '2020-12-01', 'Dang')
-    hdb.insert_target_list(conn, '5G','032640', 12100, '2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, '5G','032640', 12100, '2020-12-01', 'Dang', wanted='1')
     hdb.insert_target_list(conn, 'China/Food','222980', 6870, '2020-12-01', 'Dang')
     hdb.insert_target_list(conn, 'IT material', '009150', 219000, '2020-01-01', 'Jiho')
     
@@ -82,15 +82,19 @@ def init_target_list(conn):
 def init_current_stock(conn):
     hdb.create_current_stock_table(conn)
     hdb.insert_current_stock(conn, '009150', 219000, 92)
+    hdb.insert_current_stock(conn, '009450', 49124, 204)
+    hdb.insert_current_stock(conn, '010140', 6380, 782)
+    hdb.insert_current_stock(conn, '010620', 55200, 90)
     hdb.insert_current_stock(conn, '047810', 34500, 581)
     hdb.insert_current_stock(conn, '272210', 18050, 1111)
     hdb.insert_current_stock(conn, '298000', 218500, 91)
     hdb.insert_current_stock(conn, '298050', 297816, 139)
-    hdb.insert_current_stock(conn, '044600', 11904, 557)
+    hdb.insert_current_stock(conn, '033500', 11905, 557)
     hdb.insert_current_stock(conn, '048260', 61000, 328)
     hdb.insert_current_stock(conn, '064760', 147300, 133)
     hdb.insert_current_stock(conn, '099320', 66934, 583)
-    hdb.insert_current_stock(conn, '140410', 147300, 133)
+    hdb.insert_current_stock(conn, '102940', 18300, 143)
+    hdb.insert_current_stock(conn, '140410', 176897, 133)
     hdb.insert_current_stock(conn, '251370', 21900, 913)
     hdb.insert_current_stock(conn, '302550', 30897, 647)
     hdb.insert_current_stock(conn, '327620', 32507, 922)
@@ -132,19 +136,25 @@ if __name__ == "__main__":
     conn = hdb.connect_db("stock_all.db")
     #hdb.init_stock_basic_info_table(conn, 'stock_basic_info_20210307.csv')
     #print(hdb.get_stock_names(conn, '015860'))
-    my_codes = hdb.get_all_stocks_code(conn, 'all')
-
-    tokens = '2000-01-01'.split("-")
-    datef = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
-
-    tokens ='2021-03-07'.split("-")
-    datet = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
-
-    #prepare_initial_table(conn, my_codes, datef, datet)
     
+    
+    ##################To fill the stock price list use this block##############################
+    # my_codes = hdb.get_stock_code_list_interested(conn)
+    # tokens = '2021-01-01'.split("-")
+    # datef = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
+    # tokens ='2021-03-10'.split("-")
+    # datet = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
+    # prepare_initial_table(conn, my_codes, datef, datet)
+    ###########################################################################################
+    
+    ###################### To init the list of the stocks interested ##########################
     #init_target_list(conn)
-    #init_current_stock(conn)
+    ################################################################################################
     
+    
+    #######################  To init the current list of the stockes owned by me ######################
+    init_current_stock(conn)
+    ###################################################################################################
     
     # update_codes = args.codes
 

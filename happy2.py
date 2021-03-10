@@ -185,7 +185,7 @@ def check_today_data(conn, code, today = None, eng_name=True):
     today_price = l[0].get_close()
     today_rate = l[0].get_change()*100
 
-    category, added_date, base_price, origin = hdb.get_stock_info_interested(conn, code)
+    category, added_date, base_price, origin, wanted = hdb.get_stock_info_interested(conn, code)
     
     if category == None:
         return "ERROR Code {}".format(code)
@@ -209,12 +209,12 @@ def check_today_data(conn, code, today = None, eng_name=True):
     rate_max = diff_max/max_price * 100.0
 
 
-    str1 = "{7: <1} {0: <7} {1: <6} {2: <13} {3: <7.0f} {4: >4.1f} MAX:({9: <8}, {8: >4.0f} % {10: <7.0f})=> BASE [{5: <7.0f} {6: >4.0f} %] ".format(
-            category[:6], code, name, today_price, today_rate, base_price, base_rate, origin[0], rate_max, max_date[2:], max_price)
+    str1 = "{7: <1} {11: <1} {0: <7} {1: <6} {2: <13} {3: <7.0f} {4: >4.1f} MAX:({9: <8}, {8: >4.0f} {10: >6.0f})=> BS [{5: <7.0f} {6: >4.0f}] ".format(
+            category[:6], code, name, today_price, today_rate, base_price, base_rate, origin[0], rate_max, max_date[2:], max_price, wanted)
 
-    str2 = "{0: <28} {1: <5}".format(" "*28, added_date[2:7], origin)
+    str2 = "{0: <22} {1: <5}".format(" "*22, added_date[2:7], origin)
     if cnt > 0:
-        str2 = "MY [ {0: <8.0f} {1: <5.1f} ({2: <4}) ] {3: <5} ".format(avg_price, profit_rate, str(cnt), added_date[2:7], origin)
+        str2 = "[{0: >7.0f} {1: <5.1f} ({2: >4})] {3: <5} ".format(avg_price, profit_rate, str(cnt), added_date[2:7], origin)
 
     log.w("Done")
     
