@@ -97,7 +97,7 @@ def init_current_stock(conn):
     hdb.insert_current_stock(conn, '140410', 176897, 133)
     hdb.insert_current_stock(conn, '251370', 21900, 913)
     hdb.insert_current_stock(conn, '302550', 30897, 647)
-    hdb.insert_current_stock(conn, '327620', 32507, 922)
+    hdb.insert_current_stock(conn, '327260', 32507, 922)
     
     
 

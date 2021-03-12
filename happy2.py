@@ -191,6 +191,8 @@ def check_today_data(conn, code, today = None, eng_name=True):
         return "ERROR Code {}".format(code)
 
     cnt, avg_price = hdb.get_own_stock_info(conn, code)
+
+    #print(f'{code}  {cnt}  {avg_price}')
     
     kor, eng = hdb.get_stock_names(conn, code)
     

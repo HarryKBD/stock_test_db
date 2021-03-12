@@ -203,6 +203,7 @@ def get_latest_transaction(conn, code):
 
 def get_own_stock_info(conn, code):
     query = "select cnt, avg_price from current_stock where code = '{}'".format(code)
+    #print(query)
     c = conn.cursor()
     
     for row in c.execute(query):
