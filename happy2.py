@@ -205,15 +205,19 @@ if __name__ == "__main__":
     
  
     d = datetime.now()
-    d = d - timedelta(days=2)
+    #d = d - timedelta(days=2)
     result = []
     print("Getting your data..... please wait..........")
+    total = len(code_list)
+    idx = 1
     for code in code_list:
         r, rstr = check_today_data(conn, code, d, eng_name=print_eng)
         if r != None:
             result.append(r)
         else:
             print(f"ERROR==> {code} :  {rstr}")
+        print(f'Getting data ({idx}/{total})')
+        idx = idx + 1
 
     if len(result) > 0:
         print('*'*100)
