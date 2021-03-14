@@ -7,8 +7,10 @@ import numpy as np
 import hdb
 import code_list
 import korea_stocks_info
+from stock_def import StockPrice
 
-FORMAT_DATE = '%Y-%m-%d'
+
+from happy_utils import FORMAT_DATE
 #MY_HOME='/home/pi/stock_test_db/'
 MY_HOME='./'
 
@@ -56,40 +58,6 @@ def is_working_day(t):
 my_codes_t =  code_list.my_code_list_t
 my_codes = my_codes_t.keys()
 
-class StockPrice:
-    def __init__(self, code, date, openp = 0.0, highp = 0.0, lowp = 0.0, closep=0.0, volume = 0, change=0.0):
-        self.code = code
-        self.date = date
-        self.closep = closep
-        self.openp = openp
-        self.highp = highp
-        self.lowp = lowp
-        self.change = change
-        self.volume = volume
-
-    def to_price_text(self):
-        return "{0: <6}:{1: <15} {2} {3: <10.0f} {4: <5.2f}".format(
-                self.code, my_codes_t[self.code], self.date.strftime(FORMAT_DATE), self.closep, self.change*100)
-    def to_full_text(self):
-        return "{} {} {:.1f} {:.1f} {:.1f} {:.1f} {} {:.1f}".format(
-                self.code, self.date.strftime(FORMAT_DATE), 
-                self.openp, self.highp, self.lowp, self.closep, self.volume, self.change)
-    def get_code(self):
-        return self.code
-    def get_date(self):
-        return self.date.strftime(FORMAT_DATE)
-    def get_open(self):
-        return self.openp
-    def get_high(self):
-        return self.highp
-    def get_low(self):
-        return self.lowp
-    def get_close(self):
-        return self.closep
-    def get_volume(self):
-        return self.volume
-    def get_change(self):
-        return self.change
 
 def same_date(a, b):
     if a.year == b.year and a.month == b.month and a.day == b.day:

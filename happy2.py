@@ -7,8 +7,14 @@ import numpy as np
 import hdb
 import code_list
 import korea_stocks_info
+from stock_def import StockPrice
+from stock_def import StockTrackingResult
+from operator import itemgetter, attrgetter
+import sys
+from happy_utils import FORMAT_DATE
 
-FORMAT_DATE = '%Y-%m-%d'
+
+
 #MY_HOME='/home/pi/stock_test_db/'
 MY_HOME='./'
 
@@ -53,41 +59,6 @@ def is_working_day(t):
 #-------------------------
 #https://financedata.github.io/posts/finance-data-reader-users-guide.html
 
-
-class StockPrice:
-    def __init__(self, code, date, openp = 0.0, highp = 0.0, lowp = 0.0, closep=0.0, volume = 0, change=0.0):
-        self.code = code
-        self.date = date
-        self.closep = closep
-        self.openp = openp
-        self.highp = highp
-        self.lowp = lowp
-        self.change = change
-        self.volume = volume
-
-    def to_price_text(self):
-        return "{0: <6}: {1} {2: <10.0f} {3: <5.2f}".format(
-                self.code, self.date.strftime(FORMAT_DATE), self.closep, self.change*100)
-    def to_full_text(self):
-        return "{} {} {:.1f} {:.1f} {:.1f} {:.1f} {} {:.1f}".format(
-                self.code, self.date.strftime(FORMAT_DATE), 
-                self.openp, self.highp, self.lowp, self.closep, self.volume, self.change)
-    def get_code(self):
-        return self.code
-    def get_date(self):
-        return self.date.strftime(FORMAT_DATE)
-    def get_open(self):
-        return self.openp
-    def get_high(self):
-        return self.highp
-    def get_low(self):
-        return self.lowp
-    def get_close(self):
-        return self.closep
-    def get_volume(self):
-        return self.volume
-    def get_change(self):
-        return self.change
 
 def same_date(a, b):
     if a.year == b.year and a.month == b.month and a.day == b.day:
@@ -169,14 +140,14 @@ def check_today_data(conn, code, today = None, eng_name=True):
         
     if not is_working_day(t):
         log.w("Today {} is not a working day. pass".format(t.strftime(FORMAT_DATE)))
-        return 'HOLIDAY'
+        return None, 'HOLIDAY'
     
     #first update latest price in the db
     log.w("Getting today's data from server and insert into database. today is : " + t.strftime(FORMAT_DATE))
     l = get_stock_data_from_server(code, t, t)
     if len(l) != 1:
         log.w("There is no data for today..very strange....")
-        return 'NO_DATA_FROM_SERVER'
+        return None, 'NO_DATA_FROM_SERVER'
 
     #log.w("Got today's data! " + l[0].to_price_text(), True)
     hdb.insert_stock_data(conn, l)
@@ -188,7 +159,7 @@ def check_today_data(conn, code, today = None, eng_name=True):
     category, added_date, base_price, origin, wanted = hdb.get_stock_info_interested(conn, code)
     
     if category == None:
-        return "ERROR Code {}".format(code)
+        return None,"ERROR Code {}".format(code)
 
     cnt, avg_price = hdb.get_own_stock_info(conn, code)
 
@@ -211,22 +182,14 @@ def check_today_data(conn, code, today = None, eng_name=True):
     rate_max = diff_max/max_price * 100.0
 
 
-    str1 = "{7: <1} {11: <1} {0: <7} {1: <6} {2: <13} {3: <7.0f} {4: >4.1f} MAX:({9: <8}, {8: >4.0f} {10: >6.0f})=> BS [{5: <7.0f} {6: >4.0f}] ".format(
-            category[:6], code, name, today_price, today_rate, base_price, base_rate, origin[0], rate_max, max_date[2:], max_price, wanted)
-
-    str2 = "{0: <22} {1: <5}".format(" "*22, added_date[2:7], origin)
-    if cnt > 0:
-        str2 = "[{0: >7.0f} {1: <5.1f} ({2: >4})] {3: <5} ".format(avg_price, profit_rate, str(cnt), added_date[2:7], origin)
+    r = StockTrackingResult(code, category, added_date, base_price, origin, wanted, cnt, avg_price, name, max_date, max_price, today_price, today_rate)
 
     log.w("Done")
     
-    print(str1 + str2)
-
-    #print("{0} => max date: {1}  price {2: 5.1f}".format(code, max_date, max_price))
+    return r, "OK"
     
 
 
-import sys
 
 
 if __name__ == "__main__":
@@ -242,9 +205,22 @@ if __name__ == "__main__":
     
  
     d = datetime.now()
+    d = d - timedelta(days=2)
+    result = []
+    print("Getting your data..... please wait..........")
     for code in code_list:
-        r = check_today_data(conn, code, d, eng_name=print_eng)
-        
-        
+        r, rstr = check_today_data(conn, code, d, eng_name=print_eng)
+        if r != None:
+            result.append(r)
+        else:
+            print(f"ERROR==> {code} :  {rstr}")
+
+    if len(result) > 0:
+        print('*'*100)
+        new_result = sorted(result, key=attrgetter('base_rate'))        
+    
+        for i in new_result:
+            print(i.get_print_string())
+            
     log.disable()
     conn.close()
