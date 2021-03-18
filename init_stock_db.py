@@ -67,7 +67,7 @@ def init_target_list(conn):
     hdb.insert_target_list(conn, '5G','050890', 11050, '2020-12-01', 'Dang')
     hdb.insert_target_list(conn, '5G','039560', 12500, '2020-12-01', 'Dang')
     hdb.insert_target_list(conn, '5G','032640', 12100, '2020-12-01', 'Dang', wanted='1')
-    hdb.insert_target_list(conn, 'China/Food','222980', 6870, '2020-12-01', 'Dang')
+    hdb.insert_target_list(conn, 'China/Food','222040', 8150, '2021-03-01', 'Dang')
     hdb.insert_target_list(conn, 'IT material', '009150', 219000, '2020-01-01', 'Jiho')
     
     hdb.insert_target_list(conn, 'IT material', '272210', 18050, '2020-01-01', 'Jiho')                       
@@ -78,26 +78,43 @@ def init_target_list(conn):
     hdb.insert_target_list(conn, 'Medical', '140410', 176897, '2020-01-01', 'Jiho')                       
     hdb.insert_target_list(conn, 'Battery', '251370', 21900, '2020-01-01', 'Jiho')                       
     hdb.insert_target_list(conn, 'Battery', '327260', 32507, '2020-01-01', 'Jiho')                           
+
+    #ETF
+    hdb.insert_target_list(conn, 'ETF', '133690', 66939, '2020-02-01', 'ETF')                           
+    hdb.insert_target_list(conn, 'ETF', '157490', 17185, '2020-02-01', 'ETF')                           
+    hdb.insert_target_list(conn, 'ETF', '251350', 17259, '2020-02-01', 'ETF')                           
+    hdb.insert_target_list(conn, 'ETF', '292150', 15227, '2020-02-01', 'ETF')                           
+    hdb.insert_target_list(conn, 'ETF', '305720', 19944, '2020-02-01', 'ETF')                           
+    hdb.insert_target_list(conn, 'ETF', '314250', 28680, '2020-02-01', 'ETF')                           
     
 def init_current_stock(conn):
     hdb.create_current_stock_table(conn)
     hdb.insert_current_stock(conn, '009150', 219000, 92)
     hdb.insert_current_stock(conn, '009450', 49124, 204)
     hdb.insert_current_stock(conn, '010140', 6380, 782)
-    hdb.insert_current_stock(conn, '010620', 55200, 90)
+    hdb.insert_current_stock(conn, '010620', 57690, 187)
     hdb.insert_current_stock(conn, '047810', 34500, 581)
     hdb.insert_current_stock(conn, '272210', 18050, 1111)
     hdb.insert_current_stock(conn, '298000', 218500, 91)
     hdb.insert_current_stock(conn, '298050', 297816, 139)
     hdb.insert_current_stock(conn, '033500', 11905, 557)
-    hdb.insert_current_stock(conn, '048260', 61000, 328)
+    hdb.insert_current_stock(conn, '048260', 64958, 398)
     hdb.insert_current_stock(conn, '064760', 147300, 133)
     hdb.insert_current_stock(conn, '099320', 66934, 583)
     hdb.insert_current_stock(conn, '102940', 18300, 143)
     hdb.insert_current_stock(conn, '140410', 176897, 133)
     hdb.insert_current_stock(conn, '251370', 21900, 913)
     hdb.insert_current_stock(conn, '302550', 30897, 647)
-    hdb.insert_current_stock(conn, '327260', 32507, 922)
+    hdb.insert_current_stock(conn, '013030', 14700, 941)
+
+    hdb.insert_current_stock(conn, '133690', 66939, 22)
+    hdb.insert_current_stock(conn, '157490', 17185, 86)                           
+    hdb.insert_current_stock(conn, '251350', 17259, 86)                           
+    hdb.insert_current_stock(conn, '292150', 15227, 104)                           
+    hdb.insert_current_stock(conn, '305720', 19944, 74)                           
+    hdb.insert_current_stock(conn, '314250', 28680, 52)                           
+
+
     
     
 
@@ -113,8 +130,23 @@ if __name__ == "__main__":
     #my_codes = code_list.my_code_list
     #my_codes = code_list.my_code_list_t.keys()
     #my_codes = korea_stocks_info.korea_stock_etf
-    
-    
+
+#insert or replace into stock_basic_info(code, name_kor, name_eng, market_type) values ('133690', 'ETFTiNasd', 'ETFTiNasd', 'ETF');
+#insert or replace into stock_basic_info(code, name_kor, name_eng, market_type) values ('157490', 'ETFTiSoft', 'ETFTiSoft', 'ETF');
+#insert or replace into stock_basic_info(code, name_kor, name_eng, market_type) values ('251350', 'ETFKoMSCI', 'ETFKoMSCI', 'ETF');
+#insert or replace into stock_basic_info(code, name_kor, name_eng, market_type) values ('292150', 'ETFTiTop10', 'ETFTiTop10', 'ETF');
+#insert or replace into stock_basic_info(code, name_kor, name_eng, market_type) values ('305720', 'ETFKoBattery', 'ETFKoBattery', 'ETF');
+#insert or replace into stock_basic_info(code, name_kor, name_eng, market_type) values ('314250', 'ETFKoUsFangP', 'ETFKoUsFangP', 'ETF');
+
+#delete from stock_basic_info WHERE code='133690';
+#delete from stock_basic_info WHERE code='157490';
+#delete from stock_basic_info WHERE code='251350';
+#delete from stock_basic_info WHERE code='292150';
+#delete from stock_basic_info WHERE code='305720';
+#delete from stock_basic_info WHERE code='314250';
+
+
+
     
    
 #     parser = argparse.ArgumentParser()
@@ -139,12 +171,12 @@ if __name__ == "__main__":
     
     
     ##################To fill the stock price list use this block##############################
-    # my_codes = hdb.get_stock_code_list_interested(conn)
-    # tokens = '2021-01-01'.split("-")
-    # datef = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
-    # tokens ='2021-03-10'.split("-")
-    # datet = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
-    # prepare_initial_table(conn, my_codes, datef, datet)
+    my_codes = hdb.get_stock_code_list_interested(conn)
+    tokens = '2021-01-01'.split("-")
+    datef = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
+    tokens ='2021-03-18'.split("-")
+    datet = datetime(int(tokens[0]), int(tokens[1]), int(tokens[2]))
+    prepare_initial_table(conn, my_codes, datef, datet)
     ###########################################################################################
     
     ###################### To init the list of the stocks interested ##########################
@@ -153,7 +185,7 @@ if __name__ == "__main__":
     
     
     #######################  To init the current list of the stockes owned by me ######################
-    init_current_stock(conn)
+    #init_current_stock(conn)
     ###################################################################################################
     
     # update_codes = args.codes

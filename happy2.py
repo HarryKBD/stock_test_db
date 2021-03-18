@@ -163,10 +163,11 @@ def check_today_data(conn, code, today = None, eng_name=True):
 
     cnt, avg_price = hdb.get_own_stock_info(conn, code)
 
-    #print(f'{code}  {cnt}  {avg_price}')
+    print(f'{code}')
     
     kor, eng = hdb.get_stock_names(conn, code)
     
+    print(kor + " " + eng)
     if eng_name == True:
         name = eng[0:13]
     else:
@@ -210,10 +211,15 @@ if __name__ == "__main__":
     print("Getting your data..... please wait..........")
     total = len(code_list)
     idx = 1
+
+    etf_list = []
     for code in code_list:
         r, rstr = check_today_data(conn, code, d, eng_name=print_eng)
         if r != None:
-            result.append(r)
+            if r.name.startswith('ETF'):
+                etf_list.append(r)
+            else:
+                result.append(r)
         else:
             print(f"ERROR==> {code} :  {rstr}")
         print(f'Getting data ({idx}/{total})')
@@ -224,6 +230,8 @@ if __name__ == "__main__":
         new_result = sorted(result, key=attrgetter('base_rate'))        
     
         for i in new_result:
+            print(i.get_print_string())
+        for i in etf_list:
             print(i.get_print_string())
             
     log.disable()
