@@ -15,8 +15,8 @@ from happy_utils import FORMAT_DATE
 
 
 
-#MY_HOME='/home/pi/stock_test_db/'
-MY_HOME='./'
+MY_HOME='/home/pi/stock_test_db/'
+#MY_HOME='./'
 
 cal = SouthKorea()
 
